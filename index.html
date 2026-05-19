@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviator Predictor – By TOJO</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#00ffcc;--b:#00d9f5;--p:#a855f7;--r:#ff4d4d;--y:#facc15;
+  --o:#f97316;--bg:#020617;--card:rgba(255,255,255,0.03);
+  --bord:rgba(0,255,204,0.15);--tx:#e2e8f0;--dim:#64748b;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Share Tech Mono',monospace;background:radial-gradient(ellipse at 20% 0%,#0d2a1e,var(--bg) 55%,#0a0a1a);color:var(--tx);min-height:100vh;padding-bottom:80px;}
+
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:none;justify-content:center;align-items:center;z-index:9000;overflow-y:auto;padding:20px 14px;}
+.screen.active{display:flex;}
+#loginScreen{background:radial-gradient(ellipse at top,#0f172a,var(--bg));}
+
+
+/* ── LOGIN ── */
+.lbox{width:100%;max-width:400px;padding:38px 30px;border-radius:28px;border:1px solid var(--bord);background:rgba(0,0,0,0.65);backdrop-filter:blur(24px);text-align:center;box-shadow:0 0 80px rgba(0,255,204,0.06);}
+.lbox h1{font-family:'Orbitron',monospace;font-size:19px;color:var(--g);letter-spacing:3px;margin-bottom:4px;}
+.lbox p{font-size:11px;color:var(--dim);margin-bottom:22px;}
+.ltabs{display:flex;gap:6px;margin-bottom:20px;}
+.ltab{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;transition:all .25s;}
+.ltab.on{background:rgba(0,255,204,0.1);border-color:var(--g);color:var(--g);box-shadow:0 0 14px rgba(0,255,204,0.1);}
+
+/* ── FIELDS ── */
+.fld{margin-bottom:13px;text-align:left;}
+.fld label{display:block;font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:5px;}
+.pw{position:relative;}
+.fld input,.fld select,.pw input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:var(--tx);font-size:14px;font-family:'Share Tech Mono',monospace;outline:none;transition:all .2s;}
+.pw input{padding-right:42px;}
+.fld select option{background:#0f172a;}
+.fld input:focus,.pw input:focus,.fld select:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,255,204,0.07);}
+.eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:15px;color:var(--dim);user-select:none;}
+.eye:hover{color:var(--g);}
+.em{color:var(--r);font-size:11px;margin-bottom:9px;min-height:15px;}
+.om{color:var(--g);font-size:11px;margin-bottom:9px;min-height:15px;}
+
+/* ── BUTTONS ── */
+.bP{width:100%;padding:13px;border:none;border-radius:11px;background:linear-gradient(90deg,var(--g),var(--b));color:#000;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;box-shadow:0 4px 18px rgba(0,255,204,0.2);}
+.bP:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(0,255,204,0.35);}
+.bG{width:100%;margin-top:9px;padding:10px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:transparent;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;}
+.bG:hover{border-color:var(--g);color:var(--g);}
+.bR{padding:6px 10px;border:1px solid rgba(255,77,77,0.3);border-radius:7px;background:rgba(255,77,77,0.08);color:var(--r);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.bR:hover{background:var(--r);color:#fff;}
+.bO{padding:6px 10px;border:1px solid rgba(249,115,22,0.3);border-radius:7px;background:rgba(249,115,22,0.08);color:#f97316;font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.bO:hover{background:#f97316;color:#fff;}
+.bY{padding:6px 10px;border:1px solid rgba(250,204,21,0.3);border-radius:7px;background:rgba(250,204,21,0.08);color:var(--y);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.bY:hover{background:var(--y);color:#000;}
+.bGn{padding:6px 10px;border:1px solid rgba(0,255,204,0.3);border-radius:7px;background:rgba(0,255,204,0.08);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.bGn:hover{background:var(--g);color:#000;}
+.bB{padding:6px 10px;border:1px solid rgba(0,217,245,0.3);border-radius:7px;background:rgba(0,217,245,0.08);color:var(--b);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.bB:hover{background:var(--b);color:#000;}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.04);position:sticky;top:0;z-index:100;background:rgba(2,6,23,0.94);backdrop-filter:blur(14px);}
+#clock{font-family:'Orbitron',monospace;font-size:15px;color:var(--g);letter-spacing:4px;}
+.tr{display:flex;gap:7px;align-items:center;}
+.ubadge{font-size:11px;color:var(--dim);background:rgba(255,255,255,0.04);padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.06);}
+.ubadge b{color:var(--g);}
+.ico{width:33px;height:33px;border-radius:50%;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.4);color:var(--tx);font-size:14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;}
+.ico:hover{border-color:var(--g);}
+
+/* ── SETTINGS ── */
+.spanel{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);backdrop-filter:blur(8px);z-index:998;justify-content:center;align-items:center;}
+.spanel.open{display:flex;}
+.sbox{width:90%;max-width:300px;padding:24px;border-radius:22px;border:1px solid var(--bord);background:rgba(4,10,24,0.97);}
+.sbox h3{font-family:'Orbitron',monospace;font-size:12px;color:var(--g);margin-bottom:16px;letter-spacing:3px;text-align:center;}
+.si{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.si:last-of-type{border-bottom:none;}
+
+/* ── ADMIN ── */
+.awrap{width:100%;max-width:940px;margin:0 auto;padding:20px 14px 60px;}
+.ahead{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.05);}
+.ahead h2{font-family:'Orbitron',monospace;font-size:16px;color:var(--p);letter-spacing:3px;}
+.atabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+.atab{padding:9px 15px;border-radius:10px;border:1px solid rgba(255,255,255,0.07);background:transparent;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;letter-spacing:1px;}
+.atab.on{background:rgba(168,85,247,0.12);border-color:var(--p);color:var(--p);box-shadow:0 0 12px rgba(168,85,247,0.1);}
+.asec{display:none;animation:fin .3s ease;}
+.asec.on{display:block;}
+@keyframes fin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.srow{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px;}
+.sc{flex:1;min-width:85px;padding:14px 10px;border-radius:14px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.05);text-align:center;}
+.sc .n{font-family:'Orbitron',monospace;font-size:26px;margin-bottom:2px;}
+.sc .l{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;}
+.tw{overflow-x:auto;border-radius:14px;border:1px solid rgba(255,255,255,0.05);}
+.ut{width:100%;border-collapse:collapse;min-width:500px;}
+.ut thead tr{background:rgba(0,0,0,0.3);}
+.ut th{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;padding:11px 13px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:left;}
+.ut td{padding:11px 13px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.03);vertical-align:middle;}
+.ut tbody tr:last-child td{border-bottom:none;}
+.ut tbody tr:hover td{background:rgba(255,255,255,0.01);}
+.bdg{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;}
+.bA{background:rgba(168,85,247,0.12);color:var(--p);border:1px solid rgba(168,85,247,0.25);}
+.bU{background:rgba(0,217,245,0.1);color:var(--b);border:1px solid rgba(0,217,245,0.2);}
+.bBL{background:rgba(255,77,77,0.1);color:var(--r);border:1px solid rgba(255,77,77,0.2);}
+.bON{background:rgba(0,255,204,0.08);color:var(--g);border:1px solid rgba(0,255,204,0.18);}
+.ar{display:flex;gap:5px;flex-wrap:wrap;}
+.cf{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);border-radius:18px;padding:22px;max-width:440px;}
+.cf h4{font-family:'Orbitron',monospace;font-size:12px;color:var(--b);margin-bottom:16px;letter-spacing:3px;}
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:99999;justify-content:center;align-items:center;}
+.mo.open{display:flex;}
+.mb{width:90%;max-width:350px;padding:26px 22px;border-radius:22px;border:1px solid rgba(0,217,245,0.2);background:rgba(4,11,28,0.99);}
+.mb h3{font-family:'Orbitron',monospace;font-size:13px;color:var(--b);margin-bottom:16px;letter-spacing:3px;text-align:center;}
+
+/* ── APP ── */
+.titlebox{width:90%;max-width:720px;margin:0 auto 14px;padding:18px 20px;border-radius:22px;border:1px solid var(--bord);background:rgba(0,0,0,0.3);backdrop-filter:blur(12px);text-align:center;}
+.apptitle{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;color:#fff;letter-spacing:3px;}
+.creator{margin-top:4px;font-size:11px;color:var(--g);opacity:.75;letter-spacing:3px;}
+.disc{width:90%;max-width:720px;margin:0 auto 14px;padding:9px 14px;border-radius:9px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);color:var(--dim);font-size:11px;text-align:center;}
+.maincont{width:90%;max-width:720px;margin:0 auto;}
+
+/* ── PREDICT CARD ── */
+.pcard{background:var(--card);border:1px solid rgba(255,255,255,0.07);border-radius:22px;padding:20px;backdrop-filter:blur(12px);}
+.pcard.adm{border-color:rgba(168,85,247,0.18);background:rgba(168,85,247,0.02);}
+.ptitle{font-family:'Orbitron',monospace;font-size:11px;color:var(--b);letter-spacing:4px;text-align:center;margin-bottom:16px;}
+
+/* ── INPUT GROUPS ── */
+.ig{border:1px solid rgba(0,255,255,0.08);border-radius:13px;padding:13px;margin-bottom:10px;background:rgba(0,0,0,0.18);}
+.ig label,.tg label,.cg label{display:block;font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.hint{font-size:9px;color:rgba(100,116,139,0.75);margin-top:5px;line-height:1.5;}
+.ir{display:flex;gap:8px;align-items:center;}
+.ai{flex:1;padding:10px 12px;border-radius:9px;border:1px solid rgba(0,255,150,0.15);background:rgba(255,255,255,0.04);color:var(--tx);font-size:14px;font-family:'Share Tech Mono',monospace;outline:none;transition:all .2s;width:100%;}
+.ai:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(0,255,204,0.07);}
+.anlz{padding:10px 16px;border:none;border-radius:9px;background:linear-gradient(90deg,var(--g),var(--b));color:#000;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;letter-spacing:1px;}
+.anlz:hover{transform:translateY(-2px);box-shadow:0 5px 18px rgba(0,255,204,0.4);}
+.qr{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+.qr button{flex:1;min-width:44px;padding:7px;border-radius:7px;border:1px solid rgba(0,255,150,0.15);background:rgba(0,255,150,0.05);color:var(--g);font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:bold;cursor:pointer;transition:all .2s;}
+.qr button:hover{background:var(--g);color:#000;transform:scale(1.06);}
+.tg{border:1px solid rgba(255,230,0,0.08);border-radius:13px;padding:13px;margin-bottom:10px;background:rgba(0,0,0,0.18);}
+.trow{display:flex;gap:8px;}
+.cg{border:1px solid rgba(0,200,255,0.1);border-radius:13px;padding:13px;margin-bottom:10px;background:rgba(0,0,0,0.18);}
+.cr2{display:flex;gap:8px;}
+.hex-prev{margin-top:6px;font-size:10px;color:var(--b);letter-spacing:1px;min-height:14px;}
+
+/* ── HISTORY 5 TOURS ── */
+.hg{border:1px solid rgba(168,85,247,0.15);border-radius:13px;padding:14px;margin-bottom:10px;background:rgba(168,85,247,0.03);}
+.hg label{display:block;font-size:9px;color:var(--p);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+
+/* 5 slots fixes */
+.slots{display:flex;gap:6px;margin-bottom:10px;}
+.slot{flex:1;text-align:center;}
+.slot-lbl{font-size:9px;color:var(--dim);letter-spacing:1px;margin-bottom:5px;}
+.slot-inp{width:100%;padding:9px 4px;border-radius:9px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.3);color:var(--tx);font-family:'Orbitron',monospace;font-size:13px;text-align:center;outline:none;transition:all .2s;}
+.slot-inp:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(168,85,247,0.1);}
+.slot-inp.filled-low{border-color:rgba(0,255,204,0.4);background:rgba(0,255,204,0.06);color:var(--g);}
+.slot-inp.filled-mid{border-color:rgba(250,204,21,0.4);background:rgba(250,204,21,0.06);color:var(--y);}
+.slot-inp.filled-hi{border-color:rgba(255,77,77,0.4);background:rgba(255,77,77,0.06);color:var(--r);}
+.slot-arrow{font-size:12px;color:var(--dim);text-align:center;margin-top:8px;}
+
+.hist-actions{display:flex;gap:7px;margin-top:8px;}
+.hist-fill-btn{flex:1;padding:8px;border-radius:8px;border:1px solid rgba(168,85,247,0.3);background:rgba(168,85,247,0.08);color:var(--p);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;text-align:center;}
+.hist-fill-btn:hover{background:var(--p);color:#fff;}
+.hist-clear-btn{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,77,77,0.25);background:rgba(255,77,77,0.06);color:var(--r);font-family:'Share Tech Mono',monospace;font-size:11px;cursor:pointer;transition:all .2s;}
+.hist-clear-btn:hover{background:var(--r);color:#fff;}
+
+.warnbar{padding:9px 12px;text-align:center;font-size:11px;font-weight:bold;color:var(--y);border:1px solid rgba(250,204,21,0.18);border-radius:9px;background:rgba(250,204,21,0.04);animation:blnk 2s infinite;letter-spacing:1px;margin-top:2px;}
+@keyframes blnk{0%,100%{opacity:1}50%{opacity:.55}}
+.lbtn{display:block;width:100%;margin-top:12px;padding:9px;font-size:11px;color:var(--dim);background:transparent;border:1px solid rgba(255,255,255,0.06);border-radius:9px;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .2s;}
+.lbtn:hover{border-color:var(--r);color:var(--r);}
+
+/* ══ RESULT ══ */
+.rbox{margin-top:16px;animation:rise .4s cubic-bezier(.2,1,.4,1);}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* Hero */
+.hero{position:relative;text-align:center;padding:26px 14px 20px;border-radius:20px;margin-bottom:12px;overflow:hidden;background:linear-gradient(135deg,rgba(0,0,0,0.6),rgba(0,255,204,0.03));border:1px solid rgba(0,255,204,0.12);}
+.hero::before{content:'';position:absolute;top:-50px;left:50%;transform:translateX(-50%);width:240px;height:240px;background:radial-gradient(circle,rgba(0,255,204,0.1),transparent 70%);pointer-events:none;}
+.hero-sub{font-size:9px;color:var(--dim);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px;}
+.hero-mult{font-family:'Orbitron',monospace;font-size:70px;font-weight:900;line-height:1;margin-bottom:6px;}
+.hm-lo{color:var(--g);text-shadow:0 0 40px rgba(0,255,204,0.4);}
+.hm-mi{color:var(--y);text-shadow:0 0 40px rgba(250,204,21,0.45);}
+.hm-hi{color:var(--r);text-shadow:0 0 40px rgba(255,77,77,0.5);animation:pls .9s ease-in-out infinite;}
+@keyframes pls{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.hero-range{font-size:12px;color:var(--dim);margin-bottom:4px;}
+.hero-range span{color:var(--tx);}
+.hero-hash{font-size:10px;color:rgba(0,255,204,0.45);margin-top:5px;letter-spacing:2px;word-break:break-all;}
+.jp{display:inline-block;font-family:'Orbitron',monospace;font-size:13px;color:var(--y);letter-spacing:2px;margin-top:4px;animation:pls 1s infinite;}
+
+/* Seed decode */
+.seed-box{padding:13px 15px;border-radius:13px;background:rgba(0,0,0,0.35);border:1px solid rgba(0,217,245,0.1);margin-bottom:12px;}
+.seed-ttl{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:9px;}
+.seed-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;}
+.seed-item{padding:9px 11px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);}
+.seed-lbl{font-size:9px;color:var(--dim);letter-spacing:2px;margin-bottom:3px;}
+.seed-val{font-family:'Orbitron',monospace;font-size:12px;word-break:break-all;}
+.sv-b{color:var(--b)}.sv-p{color:#c084fc}.sv-g{color:var(--g)}.sv-y{color:var(--y)}
+
+/* History visual */
+.hist-vis{padding:13px 15px;border-radius:13px;background:rgba(0,0,0,0.35);border:1px solid rgba(168,85,247,0.12);margin-bottom:12px;}
+.hist-vis-ttl{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;}
+.hist-timeline{display:flex;align-items:center;gap:4px;overflow-x:auto;padding-bottom:4px;}
+.ht-item{text-align:center;flex-shrink:0;}
+.ht-bar-wrap{width:38px;display:flex;align-items:flex-end;justify-content:center;height:55px;}
+.ht-bar{width:28px;border-radius:5px 5px 0 0;transition:height .5s ease;}
+.ht-val{font-family:'Orbitron',monospace;font-size:10px;margin-top:3px;}
+.ht-lbl{font-size:8px;color:var(--dim);margin-top:1px;}
+.ht-arr{font-size:14px;color:var(--dim);margin-bottom:16px;flex-shrink:0;}
+.ht-next{flex-shrink:0;text-align:center;}
+.ht-next .ht-bar-wrap{border:1px dashed rgba(0,255,204,0.3);border-radius:5px;background:rgba(0,255,204,0.04);}
+.ht-next .ht-lbl{color:var(--g);}
+
+/* 6-stat grid */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}
+.sgc{padding:12px 9px;border-radius:13px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);text-align:center;}
+.sgl{font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+.sgv{font-family:'Orbitron',monospace;font-size:15px;}
+.cG{color:var(--g)}.cB{color:var(--b)}.cP{color:#c084fc}.cY{color:var(--y)}.cR{color:var(--r)}.cW{color:#fff}
+
+/* Confidence */
+.cc{padding:16px;border-radius:14px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.05);margin-bottom:12px;}
+.ch{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cl2{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;}
+.cn{font-family:'Orbitron',monospace;font-size:26px;font-weight:700;}
+.bt{height:11px;background:rgba(255,255,255,0.06);border-radius:11px;overflow:hidden;margin-bottom:12px;}
+.bf{height:100%;border-radius:11px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+.cd{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cdi{padding:12px;border-radius:10px;text-align:center;}
+.cdl{font-size:9px;color:var(--dim);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px;}
+.cdv{font-family:'Orbitron',monospace;font-size:13px;}
+.cdG{background:rgba(0,255,150,0.05);border:1px solid rgba(0,255,150,0.12);}
+.cdG .cdv{color:var(--g);}
+.cdP{background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.14);}
+.cdP .cdv{color:#c084fc;font-size:12px;}
+
+/* Proba bars */
+.pb{padding:14px;border-radius:14px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.05);}
+.pbt{font-size:9px;color:var(--dim);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+.pr{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.pr:last-child{margin-bottom:0;}
+.pl{font-size:11px;width:64px;flex-shrink:0;}
+.pt2{flex:1;height:9px;background:rgba(255,255,255,0.06);border-radius:9px;overflow:hidden;}
+.pf{height:100%;border-radius:9px;transition:width .8s ease;}
+.pp{font-family:'Orbitron',monospace;font-size:11px;width:36px;text-align:right;flex-shrink:0;}
+
+.nodata{margin-top:12px;padding:13px;border-radius:11px;background:rgba(255,255,255,0.02);border:1px dashed rgba(255,255,255,0.07);color:var(--dim);text-align:center;font-size:12px;}
+canvas{margin-top:12px;width:100%!important;border-radius:11px;}
+.empty-state{text-align:center;padding:36px;color:var(--dim);font-size:12px;}
+
+@media(max-width:520px){
+  .apptitle{font-size:18px;}
+  .ir,.trow,.cr2{flex-direction:column;}
+  .anlz{width:100%;}
+  .sg{grid-template-columns:repeat(2,1fr);}
+  .hero-mult{font-size:48px;}
+  .slots{gap:4px;}
+  .slot-inp{font-size:11px;padding:7px 2px;}
+  .seed-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen" class="screen active">
+  <div class="lbox">
+    <h1 id="ltitle">🔐 ACCÈS SÉCURISÉ</h1>
+    <p id="lsub">Apidiro ny anaranao sy ny mot de passe</p>
+    <div class="ltabs">
+      <button class="ltab on" onclick="switchLT('user',this)">👤 Utilisateur</button>
+      <button class="ltab"    onclick="switchLT('admin',this)">🛡️ Admin</button>
+    </div>
+    <div class="fld"><label>Nom d'utilisateur</label><input type="text" id="lu" placeholder="Username" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="fld"><label>Mot de passe</label>
+      <div class="pw"><input type="password" id="lp" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"><span class="eye" onclick="ey('lp')">👁</span></div>
+    </div>
+    <div class="em" id="le"></div>
+    <button class="bP" onclick="doLogin()">ENTRER</button>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<!-- ADMIN DRAWER -->
+<div id="adminOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);z-index:8000;" onclick="closeAdminPanel()"></div>
+<div id="adminDrawer" style="display:none;position:fixed;top:0;right:0;height:100%;width:min(480px,100%);background:linear-gradient(160deg,#130a22,#020617);border-left:1px solid rgba(168,85,247,0.25);z-index:8001;overflow-y:auto;padding:20px 16px 60px;box-shadow:-10px 0 40px rgba(168,85,247,0.12);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);">
+    <h2 style="font-family:Orbitron,monospace;font-size:16px;color:var(--p);letter-spacing:3px;">🛡️ PANNEAU ADMIN</h2>
+    <button style="padding:7px 14px;border:1px solid rgba(255,255,255,0.1);border-radius:9px;background:transparent;color:var(--dim);font-family:Share Tech Mono,monospace;font-size:12px;cursor:pointer;" onclick="closeAdminPanel()">✕ Fermer</button>
+  </div>
+  <div class="srow" id="adStats"></div>
+  <div class="atabs">
+    <button class="atab on" onclick="aTab('users',this)">👥 Users</button>
+    <button class="atab"    onclick="aTab('create',this)">➕ Créer</button>
+    <button class="atab"    onclick="aTab('myacc',this)">⚙️ Compte</button>
+  </div>
+  <div id="tab-users"  class="asec on"><div class="tw" id="utWrap"></div></div>
+  <div id="tab-create" class="asec">
+    <div class="cf">
+      <h4>➕ CRÉER UTILISATEUR</h4>
+      <div class="fld"><label>Nom d'utilisateur</label><input type="text" id="nu" placeholder="ex: user01"></div>
+      <div class="fld"><label>Mot de passe</label><div class="pw"><input type="password" id="np2" placeholder="••••••••"><span class="eye" onclick="ey('np2')">👁</span></div></div>
+      <div class="fld"><label>Rôle</label><select id="nr"><option value="user">👤 Utilisateur</option><option value="admin">🛡️ Admin</option></select></div>
+      <div class="em" id="ce"></div><div class="om" id="co"></div>
+      <button class="bP" onclick="createUser()">CRÉER</button>
+    </div>
+  </div>
+  <div id="tab-myacc" class="asec">
+    <div class="cf">
+      <h4>⚙️ MON MOT DE PASSE</h4>
+      <div class="fld"><label>Nouveau</label><div class="pw"><input type="password" id="mnp" placeholder="••••••••"><span class="eye" onclick="ey('mnp')">👁</span></div></div>
+      <div class="fld"><label>Confirmer</label><div class="pw"><input type="password" id="mcp" placeholder="••••••••"><span class="eye" onclick="ey('mcp')">👁</span></div></div>
+      <div class="em" id="me"></div><div class="om" id="mo2"></div>
+      <button class="bP" onclick="chMyP()">ENREGISTRER</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="mo" id="cpMod">
+  <div class="mb">
+    <h3>🔑 CHANGER MOT DE PASSE</h3>
+    <input type="hidden" id="cpt">
+    <div class="fld"><label>Utilisateur</label><input type="text" id="cpn" readonly style="opacity:.4;cursor:default;"></div>
+    <div class="fld"><label>Nouveau</label><div class="pw"><input type="password" id="cpnp" placeholder="••••••••"><span class="eye" onclick="ey('cpnp')">👁</span></div></div>
+    <div class="fld"><label>Confirmer</label><div class="pw"><input type="password" id="cpcp" placeholder="••••••••"><span class="eye" onclick="ey('cpcp')">👁</span></div></div>
+    <div class="em" id="cpe"></div><div class="om" id="cpo"></div>
+    <button class="bP" onclick="saveCP()">ENREGISTRER</button>
+    <button class="bG" onclick="closeMod()">Annuler</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<body>
+<div class="topbar">
+  <span id="clock"></span>
+  <div class="tr">
+    <div class="ubadge">👤 <b id="curU">—</b></div>
+    <button class="ico" id="adminPanelBtn" style="display:none;border-color:rgba(168,85,247,.4);color:var(--p);font-size:13px;" onclick="toggleAdminPanel()" title="Panneau Admin">🛡️</button>
+    <button class="ico" onclick="document.getElementById('sp').classList.toggle('open')" title="Paramètres">⚙️</button>
+    <button class="ico" style="border-color:rgba(255,77,77,.3);color:var(--r);" onclick="doLogout()" title="Déconnecter">⎋</button>
+  </div>
+</div>
+<div class="spanel" id="sp">
+  <div class="sbox">
+    <h3>⚙️ PARAMÈTRES</h3>
+    <div class="si">🔊 Son <input type="checkbox" checked></div>
+    <div class="si">🔔 Notifs <input type="checkbox" checked></div>
+    <div class="si">🌙 Thème <input type="checkbox" checked onchange="setTheme(this)"></div>
+    <button class="bG" onclick="document.getElementById('sp').classList.remove('open')">Fermer</button>
+  </div>
+</div>
+<div class="titlebox">
+  <div class="apptitle">✈️ AVIATOR PREDICTOR</div>
+  <div class="creator">CRÉATEUR : TOJO ✨</div>
+</div>
+<div class="disc">⚠️ Tsy azo antoka 100% — Fampiasana amin'ny fahazotoana</div>
+<div class="maincont">
+  <div class="pcard" id="uPredCard"></div>
+</div>
+
+<script>
+/* ══ DB ══ */
+const DB='av_v8';
+
+/* ══ USER STORE ══ */
+function gU(){try{return JSON.parse(localStorage.getItem(DB))||[];}catch{return[];}}
+function sU(u){localStorage.setItem(DB,JSON.stringify(u));}
+(function(){
+  if(!gU().length) sU([
+    {username:'admin',password:'admin123',role:'admin',blocked:false,sessionToken:null,sessionTs:0},
+    {username:'tojo', password:'t123',    role:'user', blocked:false,sessionToken:null,sessionTs:0}
+  ]);
+  // Migration: ajouter champs manquants
+  const us=gU();let ch=false;
+  us.forEach(u=>{
+    if(!('sessionToken' in u)){u.sessionToken=null;ch=true;}
+    if(!('sessionTs' in u)){u.sessionTs=0;ch=true;}
+  });
+  if(ch)sU(us);
+})();
+
+/* ══ SESSION LOCK ══
+   Fomba fiasa:
+   - Raha miditra ny user dia voatahiry ao amin'ny kaonty ny TOKEN + TIMESTAMP
+   - MY_TOKEN = token manokana amin'ity tab/browser ity (ao amin'ny sessionStorage)
+   - sessionStorage dia VOAFAFA raha mikatona ny tab — koa miverina ho null avy hatrany
+   - Heartbeat: manakora ny timestamp isaky ny 5s mba hanehoana fa mbola velona
+   - Raha misy token hafa + timestamp tsy lefetra 30s => efa misy session active hafa
+   ⚠️ Limitasyon: miasa amin'ny browser iray ihany (localStorage = local)
+══════════════════════════════════════════ */
+
+const SESSION_TTL = 30000; // 30 secondes — raha tsy misy heartbeat => session maty
+
+function genToken(){
+  return Date.now().toString(36) + Math.random().toString(36).substr(2,10);
+}
+
+// Token manokana amin'ity tab ity — voafafa raha mikatona ny tab
+if(!sessionStorage.getItem('av_tab_token')){
+  sessionStorage.setItem('av_tab_token', genToken());
+}
+const MY_TOKEN = sessionStorage.getItem('av_tab_token');
+
+function claimSession(username){
+  const us=gU(), i=us.findIndex(u=>u.username===username);
+  if(i<0)return;
+  us[i].sessionToken = MY_TOKEN;
+  us[i].sessionTs    = Date.now();
+  sU(us);
+}
+
+function releaseSession(username){
+  if(!username)return;
+  const us=gU(), i=us.findIndex(u=>u.username===username);
+  if(i<0)return;
+  if(us[i].sessionToken===MY_TOKEN){
+    us[i].sessionToken=null;
+    us[i].sessionTs=0;
+    sU(us);
+  }
+}
+
+function renewSession(username){
+  const us=gU(), i=us.findIndex(u=>u.username===username);
+  if(i<0)return;
+  if(us[i].sessionToken===MY_TOKEN){
+    us[i].sessionTs=Date.now();
+    sU(us);
+  }
+}
+
+function isSessionLocked(username){
+  const us=gU(), u=us.find(x=>x.username===username);
+  if(!u||!u.sessionToken)return false;
+  if(u.sessionToken===MY_TOKEN)return false; // c'est notre propre session
+  // Session hafa — mbola velona raha tsy lefetra 30s ny heartbeat
+  return (Date.now()-u.sessionTs) < SESSION_TTL;
+}
+
+// Libère les sessions mortes (heartbeat trop vieux)
+function cleanDeadSessions(){
+  const us=gU();let ch=false;
+  const now=Date.now();
+  us.forEach(u=>{
+    if(u.sessionToken && u.sessionToken!==MY_TOKEN && (now-u.sessionTs)>=SESSION_TTL){
+      u.sessionToken=null; u.sessionTs=0; ch=true;
+    }
+  });
+  if(ch)sU(us);
+}
+
+// Heartbeat — manova timestamp isaky ny 5s + vérifie session
+let heartbeatInterval=null;
+function startHeartbeat(){
+  stopHeartbeat();
+  heartbeatInterval=setInterval(()=>{
+    if(!CU)return;
+    renewSession(CU.username);
+    // Vérifier si session toujours valide (pas bloqué, pas kické)
+    const us=gU(), u=us.find(x=>x.username===CU.username);
+    if(!u||u.blocked||u.sessionToken!==MY_TOKEN){
+      forceLogout('⚠️ Sesion nifarana — voaroaka na voasakana ny kaonty');
+    }
+  },5000);
+}
+function stopHeartbeat(){
+  if(heartbeatInterval){clearInterval(heartbeatInterval);heartbeatInterval=null;}
+}
+
+// Libérer la session quand le tab se ferme
+window.addEventListener('beforeunload',()=>{if(CU)releaseSession(CU.username);});
+
+function forceLogout(msg){
+  stopHeartbeat();
+  CU=null;
+  ['lu','lp'].forEach(id=>document.getElementById(id).value='');
+  const le=document.getElementById('le');
+  if(le) le.innerHTML=`<span style="color:var(--y)">${msg||''}</span>`;
+  const ab=document.getElementById('adminPanelBtn');
+  if(ab) ab.style.display='none';
+  closeAdminPanel();
+  showS('loginScreen');
+}
+
+/* ══ AUTH ══ */
+let CU=null,lmode='user';
+
+function switchLT(m,btn){
+  lmode=m;
+  document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('ltitle').textContent=m==='admin'?'🛡️ ADMIN LOGIN':'🔐 ACCÈS SÉCURISÉ';
+  document.getElementById('lsub').textContent=m==='admin'?'Connexion administrateur':'Apidiro ny anaranao sy ny mot de passe';
+  document.getElementById('le').textContent='';
+}
+
+function doLogin(){
+  const un=document.getElementById('lu').value.trim();
+  const pw=document.getElementById('lp').value;
+  const e=document.getElementById('le');
+  e.textContent='';
+
+  if(!un||!pw){e.textContent='❌ Fenoy ny username sy mot de passe';return;}
+
+  // Nettoyer sessions mortes avant de vérifier
+  cleanDeadSessions();
+
+  const u=gU().find(x=>x.username===un&&x.password===pw);
+  if(!u){e.textContent='❌ Username na mot de passe tsy mety';return;}
+  if(u.blocked){e.textContent='🚫 Ity kaonty ity dia voasakana';return;}
+  if(lmode==='admin'&&u.role!=='admin'){e.textContent='🚫 Tsy manana droit admin';return;}
+  if(lmode==='user'&&u.role==='admin'){e.textContent="🛡️ Miditra amin'ny tab Admin";return;}
+
+  // ══ SESSION LOCK CHECK ══
+  if(isSessionLocked(un)){
+    const ago=Math.round((Date.now()-(gU().find(x=>x.username===un)?.sessionTs||0))/1000);
+    e.innerHTML=`
+      <div style="background:rgba(255,77,77,0.08);border:1px solid rgba(255,77,77,0.25);border-radius:10px;padding:12px;text-align:left;">
+        <div style="font-size:13px;margin-bottom:6px;">🔒 <b>Kaonty efa ampiasaina!</b></div>
+        <div style="font-size:11px;color:#94a3b8;line-height:1.6;">
+          Ity username ity dia efa miditra amin'ny appareil hafa.<br>
+          Session farany: <b style="color:#facc15">${ago}s</b> lasa.<br>
+          Miala aloha amin'ny appareil hafa vao miditra eto.
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Claim session
+  claimSession(un);
+  CU=u;
+  startHeartbeat();
+
+  if(u.role==='admin'){
+    showS(null);
+    document.getElementById('curU').textContent=u.username+' 🛡️';
+    document.getElementById('adminPanelBtn').style.display='flex';
+  } else {
+    showS(null);
+    document.getElementById('curU').textContent=u.username;
+  }
+  buildUI('uPredCard','u');
+}
+
+function doLogout(){
+  stopHeartbeat();
+  if(CU)releaseSession(CU.username);
+  CU=null;
+  ['lu','lp'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('le').textContent='';
+  const ab=document.getElementById('adminPanelBtn');
+  if(ab) ab.style.display='none';
+  closeAdminPanel();
+  showS('loginScreen');
+}
+
+function showS(id){
+  ['loginScreen'].forEach(s=>document.getElementById(s).classList.remove('active'));
+  if(id) document.getElementById(id).classList.add('active');
+}
+
+/* ══ ADMIN ══ */
+function toggleAdminPanel(){
+  const drawer=document.getElementById('adminDrawer');
+  const overlay=document.getElementById('adminOverlay');
+  const isOpen=drawer.style.display==='block';
+  if(isOpen){closeAdminPanel();}
+  else{
+    drawer.style.display='block';overlay.style.display='block';
+    setTimeout(()=>drawer.style.transform='translateX(0)',10);
+    renderStats();renderTable();
+  }
+}
+function closeAdminPanel(){
+  const drawer=document.getElementById('adminDrawer');
+  const overlay=document.getElementById('adminOverlay');
+  drawer.style.transform='translateX(100%)';
+  setTimeout(()=>{drawer.style.display='none';overlay.style.display='none';},360);
+}
+function aTab(t,btn){document.querySelectorAll('.atab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.querySelectorAll('.asec').forEach(s=>s.classList.remove('on'));document.getElementById('tab-'+t).classList.add('on');if(t==='users'){renderStats();renderTable();}}
+function renderStats(){const u=gU();const mk=(n,l,c)=>`<div class="sc"><div class="n" style="color:${c}">${n}</div><div class="l">${l}</div></div>`;document.getElementById('adStats').innerHTML=mk(u.length,'Total','var(--b)')+mk(u.filter(x=>!x.blocked).length,'Actifs','var(--g)')+mk(u.filter(x=>x.blocked).length,'Bloqués','var(--r)')+mk(u.filter(x=>x.role==='admin').length,'Admins','var(--p)');}
+function renderTable(){const us=gU();if(!us.length){document.getElementById('utWrap').innerHTML='<div class="empty-state">Tsy misy utilisateur</div>';return;}let h=`<table class="ut"><thead><tr><th>#</th><th>Utilisateur</th><th>Rôle</th><th>Statut</th><th>Session</th><th>Actions</th></tr></thead><tbody>`;us.forEach((u,i)=>{const self=CU&&u.username===CU.username;h+=`<tr><td style="color:var(--dim);font-size:11px;">${i+1}</td><td><b>${u.username}</b>${self?' <span style="color:var(--g);font-size:10px;">(vous)</span>':''}</td><td><span class="bdg ${u.role==='admin'?'bA':'bU'}">${u.role==='admin'?'🛡️ Admin':'👤 User'}</span></td><td><span class="bdg ${u.blocked?'bBL':'bON'}">${u.blocked?'🚫 Bloqué':'✅ Actif'}</span></td>
+      <td>${(()=>{const now=Date.now();const active=u.sessionToken&&(now-u.sessionTs)<30000;return active?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#00ffcc;"><span style=\"width:7px;height:7px;border-radius:50%;background:#00ffcc;box-shadow:0 0 6px #00ffcc;display:inline-block;\"></span>En ligne</span>':'<span style=\"font-size:10px;color:#475569;\">Hors ligne</span>';})()}</td>
+      <td><div class="ar"><button class="bB" onclick="openCP('${u.username}')">🔑</button>${!self?`<button class="${u.blocked?'bGn':'bY'}" onclick="tBlock('${u.username}')">${u.blocked?'✅':'🚫'}</button>${u.sessionToken?`<button class="bO" onclick="kickSession('${u.username}')" title="Hanongotra session">⏏️ Kick</button>`:''}<button class="bR" onclick="delU('${u.username}')">🗑️</button>`:''}</div></td></tr>`;});h+='</tbody></table>';document.getElementById('utWrap').innerHTML=h;}
+function createUser(){const un=document.getElementById('nu').value.trim(),pw=document.getElementById('np2').value,ro=document.getElementById('nr').value,e=document.getElementById('ce'),o=document.getElementById('co');e.textContent='';o.textContent='';if(!un||!pw){e.textContent='❌ Fenoy ny saha rehetra';return;}if(un.length<3){e.textContent='❌ 3 karatra farafahakeliny';return;}if(pw.length<4){e.textContent='❌ Mot de passe: 4 kara. farafahakeliny';return;}const us=gU();if(us.find(u=>u.username===un)){e.textContent='❌ Username efa misy';return;}us.push({username:un,password:pw,role:ro,blocked:false});sU(us);o.textContent=`✅ Voaforona "${un}"`;document.getElementById('nu').value='';document.getElementById('np2').value='';renderStats();}
+function tBlock(un){
+  const us=gU(),i=us.findIndex(u=>u.username===un);
+  if(i<0)return;
+  us[i].blocked=!us[i].blocked;
+  // Raha voasakana dia kick session avy hatrany
+  if(us[i].blocked){us[i].sessionToken=null;us[i].sessionTs=0;}
+  sU(us);renderStats();renderTable();
+}
+function kickSession(un){
+  const us=gU(),i=us.findIndex(u=>u.username===un);
+  if(i<0)return;
+  us[i].sessionToken=null;us[i].sessionTs=0;
+  sU(us);renderStats();renderTable();
+}
+function delU(un){if(!confirm(`Hamafa "${un}" ve?`))return;sU(gU().filter(u=>u.username!==un));renderStats();renderTable();}
+function openCP(un){['cpt','cpn'].forEach(id=>document.getElementById(id).value=un);['cpnp','cpcp'].forEach(id=>document.getElementById(id).value='');document.getElementById('cpe').textContent='';document.getElementById('cpo').textContent='';document.getElementById('cpMod').classList.add('open');}
+function closeMod(){document.getElementById('cpMod').classList.remove('open');}
+function saveCP(){const t=document.getElementById('cpt').value,np=document.getElementById('cpnp').value,cp=document.getElementById('cpcp').value,e=document.getElementById('cpe'),o=document.getElementById('cpo');e.textContent='';o.textContent='';if(!np){e.textContent='❌ Ampidiro ny mot de passe vaovao';return;}if(np.length<4){e.textContent='❌ 4 kara. farafahakeliny';return;}if(np!==cp){e.textContent='❌ Tsy mitovy';return;}const us=gU(),i=us.findIndex(u=>u.username===t);if(i<0)return;us[i].password=np;sU(us);o.textContent=`✅ Novana ho an'i "${t}"`;setTimeout(closeMod,1400);}
+function chMyP(){const np=document.getElementById('mnp').value,cp=document.getElementById('mcp').value,e=document.getElementById('me'),o=document.getElementById('mo2');e.textContent='';o.textContent='';if(!np){e.textContent='❌ Ampidiro ny mot de passe vaovao';return;}if(np.length<4){e.textContent='❌ 4 kara. farafahakeliny';return;}if(np!==cp){e.textContent='❌ Tsy mitovy';return;}const us=gU(),i=us.findIndex(u=>u.username===CU.username);us[i].password=np;CU.password=np;sU(us);o.textContent='✅ Novana soa aman-tsara';document.getElementById('mnp').value='';document.getElementById('mcp').value='';}
+
+/* ══ UI HELPERS ══ */
+function ey(id){const el=document.getElementById(id);el.type=el.type==='password'?'text':'password';}
+function setTheme(el){document.body.style.background=el.checked?'radial-gradient(ellipse at 20% 0%,#0d2a1e,#020617 55%,#0a0a1a)':'#f1f5f9';}
+function upClock(){const el=document.getElementById('clock');if(el)el.innerText=new Date().toLocaleTimeString();}
+setInterval(upClock,1000);upClock();
+
+/* ══════════════════════════════════════
+   PREDICTION ENGINE
+══════════════════════════════════════ */
+function hexToNorm(h){const c=h.replace(/[^0-9a-fA-F]/g,'');if(c.length<2)return null;return parseInt(c.substring(0,8).padEnd(8,'0'),16)/0xFFFFFFFF;}
+function decToNorm(d){const n=parseInt(d);if(isNaN(n)||n<0)return null;return n/(n>16777215?4294967295:16777215);}
+function normToMult(x){if(x===null)return null;return Math.max(1.00,Math.floor((0.99/(1-Math.min(x,0.97)))*100)/100);}
+
+function analyzeHex(hexStr){
+  const c=hexStr.replace(/[^0-9a-fA-F]/g,'').toLowerCase();
+  if(c.length<2)return null;
+  const res=[];
+  for(let i=0;i<c.length&&i<32;i+=8){
+    const chunk=c.substring(i,i+8).padEnd(8,'0');
+    const norm=parseInt(chunk,16)/0xFFFFFFFF;
+    res.push({chunk,norm,mult:normToMult(norm)});
+  }
+  return res;
+}
+
+function getSlotValues(who){
+  const vals=[];
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById(`${who}S${i}`);
+    if(!el)continue;
+    const v=parseFloat(el.value);
+    if(!isNaN(v)&&v>=1)vals.push(v);
+  }
+  return vals;
+}
+
+function colorSlot(inp,v){
+  inp.classList.remove('filled-low','filled-mid','filled-hi');
+  if(v>=1){
+    if(v<2)inp.classList.add('filled-low');
+    else if(v<=5)inp.classList.add('filled-mid');
+    else inp.classList.add('filled-hi');
+  }
+}
+
+function onSlotChange(who,idx){
+  const el=document.getElementById(`${who}S${idx}`);
+  if(!el)return;
+  const v=parseFloat(el.value);
+  colorSlot(el,v);
+}
+
+function clearSlots(who){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById(`${who}S${i}`);
+    if(el){el.value='';el.classList.remove('filled-low','filled-mid','filled-hi');}
+  }
+}
+
+function autoFillDemo(who){
+  const demos=[1.23,2.87,1.05,4.32,7.61];
+  demos.forEach((v,i)=>{
+    const el=document.getElementById(`${who}S${i+1}`);
+    if(el){el.value=v;colorSlot(el,v);}
+  });
+}
+
+function estimateNext(hexStr,decStr,history){
+  let signals=[],weights=[];
+  if(hexStr){
+    const chunks=analyzeHex(hexStr);
+    if(chunks&&chunks.length>0){
+      signals.push(chunks[chunks.length-1].mult);weights.push(0.40);
+      if(chunks.length>1){
+        const trend=(chunks[chunks.length-1].norm-chunks[chunks.length-2].norm)*0.5+0.5;
+        signals.push(normToMult(Math.min(0.96,Math.max(0.02,trend))));weights.push(0.15);
+      }
+    }
+  }
+  if(decStr){const n=decToNorm(decStr);if(n!==null){signals.push(normToMult(n));weights.push(0.30);}}
+  if(history.length>0){
+    const last=history[history.length-1];
+    const avg=history.reduce((a,b)=>a+b,0)/history.length;
+    const trend=last>avg?avg*1.15:avg*0.88;
+    signals.push(Math.max(1,trend));weights.push(0.20);
+  }
+  if(!signals.length){const r=Math.random();return r<0.55?+(Math.random()*1.2+1).toFixed(2):r<0.82?+(Math.random()*3+2).toFixed(2):+(Math.random()*7+5).toFixed(2);}
+  const tw=weights.reduce((a,b)=>a+b,0);
+  let w=0;signals.forEach((s,i)=>w+=s*(weights[i]/tw));
+  const noise=(Math.random()-0.5)*0.14*w;
+  return Math.max(1.00,Math.floor((w+noise)*100)/100);
+}
+
+/* ══ BUILD UI ══ */
+const CHARTS={};
+
+function buildUI(cid,who){
+  const isA=who==='a';
+  document.getElementById(cid).innerHTML=`
+    <div class="ptitle">${isA?'✈️ PRÉDICTION — VUE ADMIN':'✈️ ENTRER LES DONNÉES'}</div>
+
+    <!-- Tour farany -->
+    <div class="ig">
+      <label>Tour Farany — Multiplicateur (Last Round)</label>
+      <div class="ir">
+        <input type="number" id="${who}LM" class="ai" placeholder="ex: 2.50" step="0.01" min="1">
+        <button class="anlz" onclick="predict('${who}')">✨ ANALYSER</button>
+      </div>
+      <div class="qr">
+        <button onclick="sm('${who}LM',1.2)">1.2</button>
+        <button onclick="sm('${who}LM',1.5)">1.5</button>
+        <button onclick="sm('${who}LM',2)">×2</button>
+        <button onclick="sm('${who}LM',3)">×3</button>
+        <button onclick="sm('${who}LM',5)">×5</button>
+        <button onclick="sm('${who}LM',10)">×10</button>
+      </div>
+    </div>
+
+    <!-- HEX -->
+    <div class="cg">
+      <label>🔑 Code HEX — Server Seed Hash (Provably Fair)</label>
+      <div class="cr2">
+        <input type="text" id="${who}HX" class="ai" placeholder="ex: 3a7f2c91b4e8d065f3a2..." maxlength="64" oninput="hexPrev('${who}')">
+      </div>
+      <div class="hint">📌 Bet261 → Aviator → bouton <b>ⓘ</b> → <b>Server Seed Hash</b><br>🔢 8–64 chars hex | chaque 8 chars = 1 tour décodé</div>
+      <div class="hex-prev" id="${who}HXp"></div>
+    </div>
+
+    <!-- DECIMAL -->
+    <div class="cg" style="border-color:rgba(168,85,247,0.12);">
+      <label>🔢 Code DÉCIMAL — Nonce / Round Number</label>
+      <div class="cr2">
+        <input type="number" id="${who}DC" class="ai" placeholder="ex: 4829163" min="0">
+      </div>
+      <div class="hint">📌 Bet261 → Aviator → <b>Provably Fair</b> → <b>Client Nonce</b> na Round Number<br>🔢 Entier positif — numéro du tour actuel</div>
+    </div>
+
+    <!-- HEURE -->
+    <div class="tg">
+      <label>⏰ Heure actuelle (optionnel)</label>
+      <div class="trow">
+        <input type="number" id="${who}HH" class="ai" placeholder="HH" min="0" max="23">
+        <input type="number" id="${who}MM" class="ai" placeholder="MM" min="0" max="59">
+      </div>
+    </div>
+
+    <!-- HISTORIQUE 5 TOURS -->
+    <div class="hg">
+      <label>📊 Historique 5 Tours Farany — Mampidira avy hatrany</label>
+      <div class="slots">
+        ${[1,2,3,4,5].map(i=>`
+        <div class="slot">
+          <div class="slot-lbl">Tour -${6-i}</div>
+          <input type="number" id="${who}S${i}" class="slot-inp" placeholder="×" step="0.01" min="1" oninput="onSlotChange('${who}',${i})" onkeydown="if(event.key==='Enter'&&${i}<5)document.getElementById('${who}S${i+1}').focus()">
+          <div class="slot-arrow">${i<5?'→':''}</div>
+        </div>`).join('')}
+      </div>
+      <div class="hist-actions">
+        <button class="hist-fill-btn" onclick="autoFillDemo('${who}')">🎲 Exemple demo</button>
+        <button class="hist-clear-btn" onclick="clearSlots('${who}')">🗑️ Effacer tout</button>
+      </div>
+      <div class="hint" style="margin-top:8px;">💡 Tour -5 = il y a 5 tours | Tour -1 = tour juste avant | <b>Tsara indrindra raha feno ny slots 5</b></div>
+    </div>
+
+    <div class="warnbar">🚫 AZA MIDITRA RAHA SENDRA RATSY NY TOUR FARANY ⚠️</div>
+    <div id="${who}Res"></div>
+    <canvas id="${who}Ch" height="110"></canvas>
+    ${!isA?`<button class="lbtn" onclick="doLogout()">⎋ Déconnecter</button>`:''}
+  `;
+}
+
+function sm(id,v){document.getElementById(id).value=v;}
+
+function hexPrev(who){
+  const hex=document.getElementById(who+'HX').value.replace(/[^0-9a-fA-F]/g,'');
+  const el=document.getElementById(who+'HXp');
+  if(!el||hex.length<8){if(el)el.textContent='';return;}
+  const chunks=[];
+  for(let i=0;i<Math.min(hex.length,32);i+=8){
+    const c=hex.substring(i,i+8).padEnd(8,'0');
+    chunks.push(`×${normToMult(parseInt(c,16)/0xFFFFFFFF).toFixed(2)}`);
+  }
+  el.innerHTML='🔍 Décodé: '+chunks.map((c,i)=>`<span style="color:${i===chunks.length-1?'var(--g)':'var(--dim)'}">${c}</span>`).join(' → ');
+}
+
+/* ══ PREDICT ══ */
+function predict(who){
+  const lmv=document.getElementById(who+'LM').value;
+  const hexv=document.getElementById(who+'HX').value.trim();
+  const decv=document.getElementById(who+'DC').value.trim();
+  const resEl=document.getElementById(who+'Res');
+  const hist=getSlotValues(who);
+
+  if(!lmv&&!hexv&&!decv&&!hist.length){
+    resEl.innerHTML=`<div class="nodata">⚠️ Mampidira données aloha — Tour farany + codes + historique = résultat tsara indrindra</div>`;
+    return;
+  }
+
+  // Auto-push last mult en slot 5 raha misy
+  const lm=parseFloat(lmv);
+  if(!isNaN(lm)&&lm>=1){
+    // shift slots gauche et mettre lm en slot 5
+    const cur=getSlotValues(who);
+    const newVals=[...cur,lm].slice(-5);
+    for(let i=0;i<5;i++){
+      const el=document.getElementById(`${who}S${i+1}`);
+      if(el){
+        el.value=newVals[i]||'';
+        if(newVals[i])colorSlot(el,newVals[i]);
+      }
+    }
+  }
+
+  const history=getSlotValues(who);
+  const next=estimateNext(hexv,decv,history);
+
+  // Confidence
+  let conf=40;
+  if(hexv.replace(/[^0-9a-fA-F]/g,'').length>=8)conf+=22;
+  if(decv)conf+=15;
+  conf+=Math.min(history.length*4,20);
+  conf=Math.min(90,conf+Math.floor(Math.random()*5));
+
+  const isHi=next>=5,isVHi=next>=10,isJP=next>=40;
+  const tours=3;
+  const eta=new Date();eta.setSeconds(eta.getSeconds()+tours*12);
+
+  const multCls=isVHi?'hm-hi':isHi?'hm-mi':'hm-lo';
+  const confColor=conf>=60?'var(--g)':conf>=40?'var(--y)':'var(--r)';
+  const barGrad=conf>=60?'linear-gradient(90deg,#0ea5e9,#00ffcc)':conf>=40?'linear-gradient(90deg,#f59e0b,#facc15)':'linear-gradient(90deg,#dc2626,#ff4d4d)';
+  const mc=isVHi?'cR':isHi?'cY':'cG';
+
+  // Hex decode
+  let hexHTML='';
+  if(hexv){
+    const chunks=analyzeHex(hexv);
+    if(chunks&&chunks.length){
+      const rows=chunks.slice(0,4).map((c,i)=>`
+        <div class="seed-item">
+          <div class="seed-lbl">${i===chunks.length-1||i===3?'🎯 Tour actuel':'Tour -'+(chunks.slice(0,4).length-1-i)}</div>
+          <div class="seed-val sv-b" style="font-size:10px;">${c.chunk.toUpperCase()}</div>
+          <div class="seed-val sv-g">→ ×${c.mult.toFixed(2)}</div>
+        </div>`).join('');
+      hexHTML=`<div class="seed-box"><div class="seed-ttl">🔬 DÉCODAGE HASH HEX PAR CHUNK</div><div class="seed-grid">${rows}</div></div>`;
+    }
+  }
+
+  // History timeline visual
+  let histHTML='';
+  if(history.length){
+    const maxV=Math.max(...history,next,5);
+    const items=history.map((v,i)=>{
+      const h=Math.round((v/maxV)*50)+5;
+      const c=v<2?'var(--g)':v<=5?'var(--y)':'var(--r)';
+      return `<div class="ht-item">
+        <div class="ht-bar-wrap"><div class="ht-bar" style="height:${h}px;background:${c};"></div></div>
+        <div class="ht-val" style="color:${c}">×${v.toFixed(1)}</div>
+        <div class="ht-lbl">-${history.length-i}</div>
+      </div>`;
+    }).join('<div class="ht-arr">→</div>');
+    const nh=Math.round((next/maxV)*50)+5;
+    const nc=next<2?'var(--g)':next<=5?'var(--y)':'var(--r)';
+    histHTML=`<div class="hist-vis">
+      <div class="hist-vis-ttl">📈 TIMELINE HISTORIQUE → PRÉDICTION</div>
+      <div class="hist-timeline">
+        ${items}
+        <div class="ht-arr">⟹</div>
+        <div class="ht-next">
+          <div class="ht-bar-wrap"><div class="ht-bar" style="height:${nh}px;background:${nc};border:1px dashed ${nc};"></div></div>
+          <div class="ht-val" style="color:var(--g)">×${next.toFixed(2)}</div>
+          <div class="ht-lbl" style="color:var(--g)">+1 prédit</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Proba
+  const ps=next<2?'f':next<=5?'m':'h';
+  const PB={f:{f:50,m:35,h:15},m:{f:28,m:42,h:30},h:{f:18,m:28,h:54}};
+  const CLR=['#ff4d4d','#00d9f5','#00ffcc'];
+  const LBL=['🔴 Faible (<×2)','🔵 Moyen (×2-5)','🟢 Fort (>×5)'];
+  const probaHTML=['f','m','h'].map((s,i)=>`
+    <div class="pr">
+      <span class="pl" style="font-size:10px;">${LBL[i]}</span>
+      <div class="pt2"><div class="pf" style="width:${PB[ps][s]}%;background:${CLR[i]};"></div></div>
+      <span class="pp" style="color:${CLR[i]}">${PB[ps][s]}%</span>
+    </div>`).join('');
+
+  const src=[hexv?'HEX':'',decv?'DEC':'',history.length?`HIST(${history.length})`:'' ].filter(Boolean).join(' + ')||'MINIMAL';
+
+  resEl.innerHTML=`<div class="rbox">
+    <div class="hero">
+      <div class="hero-sub">MULTIPLICATEUR PRÉDIT — PROCHAIN TOUR</div>
+      <div class="hero-mult ${multCls}">×${next.toFixed(2)}</div>
+      <div class="hero-range">Min <span>×${Math.max(1,(next*.6).toFixed(2))}</span> &nbsp;·&nbsp; Max <span>×${(next*1.5).toFixed(2)}</span></div>
+      ${hexv?`<div class="hero-hash">HASH: ${hexv.replace(/[^0-9a-fA-F]/g,'').substring(0,20).toUpperCase()}…</div>`:''}
+      ${isJP?'<div class="jp">🔥 JACKPOT POSSIBLE 🔥</div>':''}
+    </div>
+    ${hexHTML}
+    ${histHTML}
+    <div class="sg">
+      <div class="sgc"><div class="sgl">Confiance</div><div class="sgv" style="color:${confColor}">${conf}%</div></div>
+      <div class="sgc"><div class="sgl">Tours ETA</div><div class="sgv cB">${tours}</div></div>
+      <div class="sgc"><div class="sgl">Multiplicateur</div><div class="sgv ${mc}">×${next.toFixed(2)}</div></div>
+      <div class="sgc"><div class="sgl">Min</div><div class="sgv cW">×${Math.max(1,(next*.6).toFixed(2))}</div></div>
+      <div class="sgc"><div class="sgl">Max</div><div class="sgv cW">×${(next*1.5).toFixed(2)}</div></div>
+      <div class="sgc"><div class="sgl">Heure ETA</div><div class="sgv cG" style="font-size:11px;">${eta.toLocaleTimeString()}</div></div>
+    </div>
+    <div class="cc">
+      <div class="ch"><span class="cl2">⚡ CONFIANCE — SOURCES: ${src}</span><span class="cn" style="color:${confColor}">${conf}%</span></div>
+      <div class="bt"><div class="bf" style="width:${conf}%;background:${barGrad};"></div></div>
+      <div class="cd">
+        <div class="cdi cdG"><div class="cdl">⏱ Heure ETA</div><div class="cdv">${eta.toLocaleTimeString()}</div></div>
+        <div class="cdi cdP"><div class="cdl">🎯 Cible</div><div class="cdv">×${next.toFixed(2)}</div></div>
+      </div>
+    </div>
+    <div class="pb">
+      <div class="pbt">📊 DISTRIBUTION DES PROBABILITÉS</div>
+      ${probaHTML}
+    </div>
+  </div>`;
+
+  // Chart: historique + prediction
+  if(CHARTS[who])CHARTS[who].destroy();
+  const ctx=document.getElementById(who+'Ch').getContext('2d');
+  const allVals=[...history,next];
+  const labels=[...history.map((_,i)=>`-${history.length-i}`),'+1 ✨'];
+  const bgc=allVals.map((v,i)=>i===allVals.length-1?'rgba(0,255,204,0.55)':v<2?'rgba(100,116,139,0.35)':v<=5?'rgba(0,217,245,0.35)':'rgba(168,85,247,0.45)');
+  const brc=allVals.map((v,i)=>i===allVals.length-1?'#00ffcc':v<2?'#64748b':v<=5?'#00d9f5':'#a855f7');
+  CHARTS[who]=new Chart(ctx,{type:'bar',data:{labels,datasets:[{label:'×',data:allVals,backgroundColor:bgc,borderColor:brc,borderWidth:1.5,borderRadius:8,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`×${Number(c.raw).toFixed(2)}`}},title:{display:true,text:`Historique ${history.length} tours + Prédiction ×${next.toFixed(2)}`,color:'#475569',font:{size:10,family:"'Share Tech Mono',monospace"}}},scales:{x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{min:0,ticks:{color:'#64748b',font:{size:10},callback:v=>'×'+v},grid:{color:'rgba(255,255,255,0.04)'}}}}});
+}
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</body>
+</html>
